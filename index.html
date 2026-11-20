@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Evidencija izostanaka</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#e8710a">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Izostanci">
 <style>
   body { font-family: Segoe UI, Arial, sans-serif; margin: 0; background: #f3f5f8; color: #222; }
   header { background: #e8710a; color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
@@ -42,6 +48,19 @@
   .cal .g button.sel { background: #e8710a; color: #fff; }
   .cal .g button.td { border: 1px solid #e8710a; }
   .cal .ft { margin-top: 6px; text-align: right; }
+  @media (max-width: 600px) {
+    header { padding: 12px; }
+    header h1 { font-size: 18px; }
+    main { margin: 12px auto; padding: 0 8px; }
+    .card { padding: 12px; }
+    input, select, button { font-size: 16px; }
+    .row > div { flex: 1 1 100%; }
+    .row > div input, .row > div select, .row > div .dp, .row > div textarea { width: 100% !important; box-sizing: border-box; }
+    .dp input { width: 100%; box-sizing: border-box; }
+    #search { width: 100%; box-sizing: border-box; }
+    th, td { padding: 6px 4px; font-size: 14px; }
+    .cal { width: min(260px, 90vw); }
+  }
 </style>
 </head>
 <body>
@@ -372,6 +391,10 @@ $('date').value = today();
 sem = currentSem();
 renderSemSelect();
 render();
+
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
