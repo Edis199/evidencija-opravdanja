@@ -5,20 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Evidencija izostanaka</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#e8710a">
+<meta name="theme-color" content="#2e7d32">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Izostanci">
 <style>
   body { font-family: Segoe UI, Arial, sans-serif; margin: 0; background: #f3f5f8; color: #222; }
-  header { background: #e8710a; color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  header { background: #2e7d32; color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
   header h1 { font-size: 20px; margin: 0; }
   main { max-width: 960px; margin: 20px auto; padding: 0 16px; }
   .card { background: #fff; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
   label { font-size: 13px; color: #555; display: block; margin-bottom: 3px; }
   input, select, button { font-size: 15px; padding: 7px 10px; border: 1px solid #bbb; border-radius: 5px; }
-  button { cursor: pointer; background: #e8710a; color: #fff; border: none; }
+  button { cursor: pointer; background: #2e7d32; color: #fff; border: none; }
   button.sec { background: #e3e8ee; color: #222; }
   button.del { background: #c0392b; padding: 3px 9px; }
   .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
@@ -44,9 +44,9 @@
   .cal .g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
   .cal .g span { font-size: 12px; color: #777; padding: 3px 0; }
   .cal .g button { background: #fff; color: #222; padding: 5px 0; font-size: 14px; border-radius: 4px; }
-  .cal .g button:hover { background: #fde3c8; }
-  .cal .g button.sel { background: #e8710a; color: #fff; }
-  .cal .g button.td { border: 1px solid #e8710a; }
+  .cal .g button:hover { background: #d8ecd9; }
+  .cal .g button.sel { background: #2e7d32; color: #fff; }
+  .cal .g button.td { border: 1px solid #2e7d32; }
   .cal .ft { margin-top: 6px; text-align: right; }
   @media (max-width: 600px) {
     header { padding: 12px; }
@@ -288,14 +288,14 @@ $('btnCsv').onclick = () => {
     while (c.length < 5) c.push('');
     return c;
   };
-  const bd = 'border:1px solid #000;padding:2px 4px;';
+  const bd = 'border:1px solid #000;padding:2px 4px;vertical-align:middle;';
   const td = (v, extra = '') => `<td style="${bd}${extra}">${h(String(v))}</td>`;
-  let t = `<tr><td colspan="14" style="${bd}text-align:center;font-size:14pt">Pravdanje izostanaka za učenike od strane roditelja u toku šk.godine ${year}</td></tr>`;
-  t += `<tr><td colspan="7" style="${bd}">Odjeljenje : ${h(s.cls || '')}</td><td colspan="7" style="${bd}">Razrednik/ca: ${h(s.teacher || '')}</td></tr>`;
-  t += `<tr><td rowspan="3" style="${bd}text-align:center">R/b</td><td rowspan="3" style="${bd}text-align:center">Ime i Prezime</td><td colspan="12" style="${bd}text-align:center">termini pravdanja od strane roditelja u toku školske godine ${year}</td></tr>`;
-  t += `<tr><td colspan="6" style="${bd}text-align:center">I polugodište</td><td colspan="6" style="${bd}text-align:center">II polugodište</td></tr>`;
+  let t = `<tr style="height:24pt"><td colspan="14" style="${bd}text-align:center;font-size:14pt">Pravdanje izostanaka za učenike od strane roditelja u toku šk.godine ${year}</td></tr>`;
+  t += `<tr style="height:16.5pt"><td colspan="7" style="${bd}">Odjeljenje : ${h(s.cls || '')}</td><td colspan="7" style="${bd}">Razrednik/ca: ${h(s.teacher || '')}</td></tr>`;
+  t += `<tr style="height:16.5pt"><td rowspan="3" style="${bd}text-align:center">R/b</td><td rowspan="3" style="${bd}text-align:center">Ime i Prezime</td><td colspan="12" style="${bd}text-align:center">termini pravdanja od strane roditelja u toku školske godine ${year}</td></tr>`;
+  t += `<tr style="height:16.5pt"><td colspan="6" style="${bd}text-align:center">I polugodište</td><td colspan="6" style="${bd}text-align:center">II polugodište</td></tr>`;
   const nums = [1, 2, 3, 4, 5];
-  t += '<tr>' + nums.map(n => td(n, 'text-align:right')).join('') + td('ukupno') + nums.map(n => td(n, 'text-align:right')).join('') + td('ukupno') + '</tr>';
+  t += '<tr style="height:16.5pt">' + nums.map(n => td(n, 'text-align:right')).join('') + td('ukupno') + nums.map(n => td(n, 'text-align:right')).join('') + td('ukupno') + '</tr>';
   const names = allNames();
   const rows = Math.max(names.length, 27);
   for (let i = 0; i < rows; i++) {
@@ -306,16 +306,16 @@ $('btnCsv').onclick = () => {
       const a = mine.filter(e => semOf(e.date) === 1), b = mine.filter(e => semOf(e.date) === 2);
       r += grid(a).map(v => td(v)).join('') + td(tot(a)) + grid(b).map(v => td(v)).join('') + td(tot(mine));
     } else r += td('').repeat(12);
-    t += `<tr>${r}</tr>`;
+    t += `<tr style="height:16pt">${r}</tr>`;
   }
   const nb = 'font-size:12pt;vertical-align:top;';
   const clause = 'U članu 7. stav (4) mijenja se i glasi:<br>"(4) U toku nastavne godine roditelj može lično opravdati izostanak svog djeteta bez ispričnice/ljekarskog uvjerenja u trajanju od najviše pet dana u toku jednog polugodišta, odnosno deset dana u toku nastavne godine.".';
-  t += `<tr><td colspan="7" rowspan="4" style="${nb}">${clause}</td><td colspan="7" style="${nb}">&nbsp;</td></tr>`;
-  t += `<tr><td colspan="7" style="${nb}">potpis:razrednika/ce</td></tr>`;
-  t += `<tr><td colspan="7" style="${nb}">&nbsp;</td></tr>`;
-  t += `<tr><td colspan="7" style="${nb}">potpis pom.direktora:</td></tr>`;
+  t += `<tr style="height:22pt"><td colspan="7" rowspan="4" style="${nb}">${clause}</td><td colspan="7" style="${nb}">&nbsp;</td></tr>`;
+  t += `<tr style="height:22pt"><td colspan="7" style="${nb}">potpis:razrednika/ce</td></tr>`;
+  t += `<tr style="height:22pt"><td colspan="7" style="${nb}">&nbsp;</td></tr>`;
+  t += `<tr style="height:22pt"><td colspan="7" style="${nb}">potpis pom.direktora:</td></tr>`;
   const cols = '<col width="34"><col width="190">' + '<col width="78">'.repeat(5) + '<col width="90">' + '<col width="78">'.repeat(5) + '<col width="90">';
-  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>@page{size:29.7cm 21cm;mso-page-orientation:landscape;margin:.4in .4in .4in .4in;} table{table-layout:fixed;} td{white-space:normal;font-family:Calibri,Arial;font-size:11pt;}</style><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Pravdanje</x:Name><x:WorksheetOptions><x:FitToPage/><x:Print><x:ValidPrinterInfo/><x:PaperSizeIndex>9</x:PaperSizeIndex><x:FitWidth>1</x:FitWidth><x:FitHeight>1</x:FitHeight></x:Print></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table style="border-collapse:collapse">${cols}${t}</table></body></html>`;
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>@page{size:29.7cm 21cm;mso-page-orientation:landscape;margin:.4in .4in .4in .4in;mso-horizontal-page-align:center;mso-vertical-page-align:center;} table{table-layout:fixed;} td{white-space:normal;font-family:Calibri,Arial;font-size:11pt;}</style><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Pravdanje</x:Name><x:WorksheetOptions><x:FitToPage/><x:Print><x:ValidPrinterInfo/><x:PaperSizeIndex>9</x:PaperSizeIndex><x:FitWidth>1</x:FitWidth><x:FitHeight>1</x:FitHeight></x:Print></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table style="border-collapse:collapse">${cols}${t}</table></body></html>`;
   download(`pravdanje_izostanaka_${(s.cls || 'odjeljenje').replace(/[^\w.-]+/g, '_')}.xls`, html, 'application/vnd.ms-excel');
 };
 $('btnBackup').onclick = () => download(`opravdanja_kopija_${today()}.json`, JSON.stringify(db, null, 2), 'application/json');
