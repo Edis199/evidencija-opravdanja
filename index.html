@@ -288,7 +288,7 @@ $('btnCsv').onclick = () => {
     while (c.length < 5) c.push('');
     return c;
   };
-  const bd = 'border:1px solid #000;padding:2px 4px;vertical-align:middle;';
+  const bd = 'border:1px solid #000;padding:0 4px;vertical-align:middle;';
   const td = (v, extra = '') => `<td style="${bd}${extra}">${h(String(v))}</td>`;
   let t = `<tr style="height:24pt"><td colspan="14" style="${bd}text-align:center;font-size:14pt">Pravdanje izostanaka za učenike od strane roditelja u toku šk.godine ${year}</td></tr>`;
   t += `<tr style="height:16.5pt"><td colspan="7" style="${bd}">Odjeljenje : ${h(s.cls || '')}</td><td colspan="7" style="${bd}">Razrednik/ca: ${h(s.teacher || '')}</td></tr>`;
@@ -308,12 +308,18 @@ $('btnCsv').onclick = () => {
     } else r += td('').repeat(12);
     t += `<tr style="height:16pt">${r}</tr>`;
   }
-  const nb = 'font-size:12pt;vertical-align:top;';
-  const clause = 'U članu 7. stav (4) mijenja se i glasi:<br>"(4) U toku nastavne godine roditelj može lično opravdati izostanak svog djeteta bez ispričnice/ljekarskog uvjerenja u trajanju od najviše pet dana u toku jednog polugodišta, odnosno deset dana u toku nastavne godine.".';
-  t += `<tr style="height:22pt"><td colspan="7" rowspan="4" style="${nb}">${clause}</td><td colspan="7" style="${nb}">&nbsp;</td></tr>`;
-  t += `<tr style="height:22pt"><td colspan="7" style="${nb}">potpis:razrednika/ce</td></tr>`;
-  t += `<tr style="height:22pt"><td colspan="7" style="${nb}">&nbsp;</td></tr>`;
-  t += `<tr style="height:22pt"><td colspan="7" style="${nb}">potpis pom.direktora:</td></tr>`;
+  // Donji dio: pet običnih redova (bez spojenih ćelija), da visina ne bude odsječena
+  const nb = 'font-size:11pt;vertical-align:middle;white-space:nowrap;';
+  const foot = [
+    ['U članu 7. stav (4) mijenja se i glasi:', ''],
+    ['"(4) U toku nastavne godine roditelj može lično opravdati izostanak svog djeteta bez', 'potpis:razrednika/ce'],
+    ['ispričnice/ljekarskog uvjerenja u trajanju od najviše pet dana u toku jednog', ''],
+    ['polugodišta, odnosno deset dana u toku nastavne', 'potpis pom.direktora:'],
+    ['godine.".', '']
+  ];
+  foot.forEach(([l, r]) => {
+    t += `<tr style="height:16pt"><td colspan="7" style="${nb}">${h(l) || '&nbsp;'}</td><td colspan="7" style="${nb}">${h(r) || '&nbsp;'}</td></tr>`;
+  });
   const cols = '<col width="34"><col width="190">' + '<col width="78">'.repeat(5) + '<col width="90">' + '<col width="78">'.repeat(5) + '<col width="90">';
   const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>@page{size:29.7cm 21cm;mso-page-orientation:landscape;margin:.4in .4in .4in .4in;mso-horizontal-page-align:center;mso-vertical-page-align:center;} table{table-layout:fixed;} td{white-space:normal;font-family:Calibri,Arial;font-size:11pt;}</style><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Pravdanje</x:Name><x:WorksheetOptions><x:FitToPage/><x:Print><x:ValidPrinterInfo/><x:PaperSizeIndex>9</x:PaperSizeIndex><x:FitWidth>1</x:FitWidth><x:FitHeight>1</x:FitHeight></x:Print></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table style="border-collapse:collapse">${cols}${t}</table></body></html>`;
   download(`pravdanje_izostanaka_${(s.cls || 'odjeljenje').replace(/[^\w.-]+/g, '_')}.xls`, html, 'application/vnd.ms-excel');
