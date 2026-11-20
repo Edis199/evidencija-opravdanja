@@ -5,33 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Evidencija izostanaka</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#2e7d32">
+<meta name="theme-color" content="#e6d3b0">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Izostanci">
 <style>
-  body { font-family: Segoe UI, Arial, sans-serif; margin: 0; background: #f3f5f8; color: #222; }
-  header { background: #2e7d32; color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  body { font-family: Segoe UI, Arial, sans-serif; margin: 0; background: #faf5ea; color: #3a2f20; }
+  header { background: #e6d3b0; color: #4a3820; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
   header h1 { font-size: 20px; margin: 0; }
   main { max-width: 960px; margin: 20px auto; padding: 0 16px; }
   .card { background: #fff; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
   label { font-size: 13px; color: #555; display: block; margin-bottom: 3px; }
   input, select, button { font-size: 15px; padding: 7px 10px; border: 1px solid #bbb; border-radius: 5px; }
-  button { cursor: pointer; background: #2e7d32; color: #fff; border: none; }
-  button.sec { background: #e3e8ee; color: #222; }
+  button { cursor: pointer; background: #8c6d3f; color: #fff; border: none; }
+  button.sec { background: #efe4cc; color: #3a2f20; }
   button.del { background: #c0392b; padding: 3px 9px; }
   .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
   .row > div { display: flex; flex-direction: column; }
   table { width: 100%; border-collapse: collapse; }
   th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e3e3e3; }
-  th { background: #f0f3f7; font-size: 13px; }
+  th { background: #f3ead8; font-size: 13px; }
   tr.student { cursor: pointer; }
-  tr.student:hover { background: #f7f9fc; }
+  tr.student:hover { background: #fbf6ea; }
   .ok { color: #1e8449; font-weight: 600; }
   .warn { color: #b9770e; font-weight: 600; }
   .over { color: #c0392b; font-weight: 700; }
-  .detail td { background: #fafbfc; padding-left: 30px; }
+  .detail td { background: #fcf9f1; padding-left: 30px; }
   .msg { margin-top: 10px; font-size: 14px; min-height: 18px; }
   .hdr-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .hdr-controls select, .hdr-controls button { font-size: 14px; }
@@ -40,13 +40,13 @@
   .dp input { width: 190px; cursor: pointer; background: #fff; }
   .cal { display: none; position: absolute; top: 100%; left: 0; z-index: 20; width: 260px; background: #fff; border: 1px solid #bbb; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.2); padding: 8px; margin-top: 2px; }
   .cal .hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-  .cal .hd button, .cal .ft button { background: #e3e8ee; color: #222; padding: 3px 8px; }
+  .cal .hd button, .cal .ft button { background: #efe4cc; color: #3a2f20; padding: 3px 8px; }
   .cal .g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
   .cal .g span { font-size: 12px; color: #777; padding: 3px 0; }
   .cal .g button { background: #fff; color: #222; padding: 5px 0; font-size: 14px; border-radius: 4px; }
-  .cal .g button:hover { background: #d8ecd9; }
-  .cal .g button.sel { background: #2e7d32; color: #fff; }
-  .cal .g button.td { border: 1px solid #2e7d32; }
+  .cal .g button:hover { background: #f1e5cc; }
+  .cal .g button.sel { background: #8c6d3f; color: #fff; }
+  .cal .g button.td { border: 1px solid #8c6d3f; }
   .cal .ft { margin-top: 6px; text-align: right; }
   @media (max-width: 600px) {
     header { padding: 12px; }
