@@ -1,4 +1,4 @@
-# Evidencija opravdanja roditelja
+# Evidencija izostanaka
 
 Jednostavna web aplikacija za evidenciju dana i časova koje su roditelji opravdali u toku polugodišta.
 
