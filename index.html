@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evidencija opravdanja roditelja</title>
+<style>
+  body { font-family: Segoe UI, Arial, sans-serif; margin: 0; background: #f3f5f8; color: #222; }
+  header { background: #1f4e79; color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+  header h1 { font-size: 20px; margin: 0; }
+  main { max-width: 960px; margin: 20px auto; padding: 0 16px; }
+  .card { background: #fff; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+  label { font-size: 13px; color: #555; display: block; margin-bottom: 3px; }
+  input, select, button { font-size: 15px; padding: 7px 10px; border: 1px solid #bbb; border-radius: 5px; }
+  button { cursor: pointer; background: #1f4e79; color: #fff; border: none; }
+  button.sec { background: #e3e8ee; color: #222; }
+  button.del { background: #c0392b; padding: 3px 9px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+  .row > div { display: flex; flex-direction: column; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e3e3e3; }
+  th { background: #f0f3f7; font-size: 13px; }
+  tr.student { cursor: pointer; }
+  tr.student:hover { background: #f7f9fc; }
+  .ok { color: #1e8449; font-weight: 600; }
+  .warn { color: #b9770e; font-weight: 600; }
+  .over { color: #c0392b; font-weight: 700; }
+  .detail td { background: #fafbfc; padding-left: 30px; }
+  .msg { margin-top: 10px; font-size: 14px; min-height: 18px; }
+  .hdr-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .hdr-controls select, .hdr-controls button { font-size: 14px; }
+  #settings { display: none; }
+  .dp { position: relative; display: inline-block; }
+  .dp input { width: 190px; cursor: pointer; background: #fff; }
+  .cal { display: none; position: absolute; top: 100%; left: 0; z-index: 20; width: 260px; background: #fff; border: 1px solid #bbb; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.2); padding: 8px; margin-top: 2px; }
+  .cal .hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .cal .hd button, .cal .ft button { background: #e3e8ee; color: #222; padding: 3px 8px; }
+  .cal .g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+  .cal .g span { font-size: 12px; color: #777; padding: 3px 0; }
+  .cal .g button { background: #fff; color: #222; padding: 5px 0; font-size: 14px; border-radius: 4px; }
+  .cal .g button:hover { background: #dbe7f3; }
+  .cal .g button.sel { background: #1f4e79; color: #fff; }
+  .cal .g button.td { border: 1px solid #1f4e79; }
+  .cal .ft { margin-top: 6px; text-align: right; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Opravdani časovi – evidencija roditelja</h1>
+  <div class="hdr-controls">
+    <select id="semSelect"></select>
+    <button class="sec" id="btnSettings">Datumi polugodišta</button>
+  </div>
+</header>
+<main>
+  <div class="card" id="settings">
+    <b>Datumi polugodišta (promijeni svake školske godine)</b>
+    <div class="row" style="margin-top:10px">
+      <div><label>1. polugodište od</label><input type="date" id="s1a"></div>
+      <div><label>1. polugodište do</label><input type="date" id="s1b"></div>
+      <div><label>2. polugodište od</label><input type="date" id="s2a"></div>
+      <div><label>2. polugodište do</label><input type="date" id="s2b"></div>
+      <div><label>Dozvoljeno dana</label><input type="number" id="limit" min="1" style="width:80px"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div><label>Odjeljenje</label><input id="cls" style="width:120px"></div>
+      <div><label>Razrednik/ca</label><input id="teacher" style="width:220px"></div>
+    </div>
+    <div style="margin-top:10px">
+      <label>Spisak učenika (jedan učenik po redu, redoslijed kao u tabeli; možeš zalijepiti kolonu iz Excela)</label>
+      <textarea id="roster" rows="8" style="width:100%;font-size:14px;padding:7px;box-sizing:border-box"></textarea>
+    </div>
+    <div style="margin-top:10px"><button id="btnSaveSettings">Sačuvaj</button></div>
+  </div>
+
+  <div class="card">
+    <b>Novo opravdanje</b>
+    <div class="row" style="margin-top:10px">
+      <div><label>Učenik (ime i prezime)</label><select id="student" style="width:260px"></select></div>
+      <div><label>Datum opravdanog izostanka</label><input type="date" id="date"></div>
+      <div><label>Broj časova</label><input type="number" id="hours" min="1" max="12" value="1" style="width:80px"></div>
+      <button id="btnAdd">Dodaj</button>
+    </div>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:10px">
+      <b id="tableTitle">Pregled po učenicima</b>
+      <div class="row">
+        <input id="search" placeholder="Traži učenika...">
+        <button class="sec" id="btnCsv">Izvoz u Excel (tabela razrednika)</button>
+        <button class="sec" id="btnBackup">Sigurnosna kopija</button>
+        <button class="sec" id="btnRestore">Učitaj kopiju</button>
+        <input type="file" id="fileRestore" accept=".json" style="display:none">
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>Učenik</th><th>Iskorišteno dana</th><th>Ukupno časova</th><th>Status</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div id="empty" style="padding:12px;color:#777">Nema unesenih opravdanja za ovo polugodište.</div>
+  </div>
+</main>
+
+<script>
+const KEY = 'opravdanja_v1';
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const defaults = {
+  settings: { s1a: '2026-09-01', s1b: '2026-12-31', s2a: '2027-01-01', s2b: '2027-06-30', limit: 5,
+    roster: [] },
+  entries: [] // {student, date, hours}
+};
+let db = load();
+let expanded = null;
+let sem = null; // 1 or 2
+
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(KEY));
+    if (d && d.entries && d.settings) {
+      const st = d.settings;
+      if (!st.roster) st.roster = defaults.settings.roster;
+      return d;
+    }
+  } catch (e) {}
+  return JSON.parse(JSON.stringify(defaults));
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(db)); }
+const $ = id => document.getElementById(id);
+const norm = s => s.trim().replace(/\s+/g, ' ');
+const fmt = d => { const [y, m, dd] = d.split('-'); return `${dd}.${m}.${y}.`; };
+
+function semOf(date) {
+  const s = db.settings;
+  if (date >= s.s1a && date <= s.s1b) return 1;
+  if (date >= s.s2a && date <= s.s2b) return 2;
+  return 0;
+}
+function currentSem() {
+  const t = semOf(today());
+  return t || 1;
+}
+
+function msg(text, cls) { $('msg').textContent = text; $('msg').className = 'msg ' + (cls || ''); }
+
+function renderSemSelect() {
+  $('semSelect').innerHTML = `<option value="1">1. polugodište</option><option value="2">2. polugodište</option>`;
+  $('semSelect').value = sem;
+}
+
+function render() {
+  const limit = +db.settings.limit;
+  const list = db.entries.filter(e => semOf(e.date) === sem);
+  const q = $('search').value.trim().toLowerCase();
+  const byStudent = {};
+  list.forEach(e => (byStudent[e.student] = byStudent[e.student] || []).push(e));
+  const names = allNames().filter(n => n.toLowerCase().includes(q));
+
+  $('tableTitle').textContent = `Pregled po učenicima – ${sem}. polugodište`;
+  $('empty').style.display = names.length ? 'none' : 'block';
+  let html = '';
+  for (const n of names) {
+    const es = (byStudent[n] || []).sort((a, b) => a.date.localeCompare(b.date));
+    const days = es.length;
+    const hours = es.reduce((s, e) => s + e.hours, 0);
+    let st, cls;
+    if (days > limit) { st = `PREKORAČENO (${days - limit} preko limita)`; cls = 'over'; }
+    else if (days === limit) { st = 'Iskorišteno svih ' + limit; cls = 'over'; }
+    else if (days === limit - 1) { st = `Preostao 1 dan`; cls = 'warn'; }
+    else { st = `Preostalo ${limit - days}`; cls = 'ok'; }
+    html += `<tr class="student" data-n="${encodeURIComponent(n)}"><td>${esc(n)}</td><td>${days} / ${limit}</td><td>${hours}</td><td class="${cls}">${st}</td></tr>`;
+    if (expanded === n) {
+      html += es.map(e => `<tr class="detail"><td colspan="3">${fmt(e.date)} – ${e.hours} ${e.hours === 1 ? 'čas' : 'časova'}</td><td><button class="del" data-del="${encodeURIComponent(n)}|${e.date}">Obriši</button></td></tr>`).join('');
+    }
+  }
+  $('tbody').innerHTML = html;
+  const sel = $('student'), cur = sel.value;
+  sel.innerHTML = '<option value="">-- odaberi učenika --</option>' + allNames().map(n => `<option value="${esc(n)}">${esc(n)}</option>`).join('');
+  if (allNames().includes(cur)) sel.value = cur;
+}
+// Spisak učenika: prvo redoslijed iz spiska razreda, zatim učenici unijeti ručno koji nisu u spisku
+function roster() { return (db.settings.roster || []).filter(Boolean); }
+function allNames() {
+  const r = roster();
+  const have = new Set(r.map(n => n.toLowerCase()));
+  const extra = [...new Set(db.entries.map(e => e.student))].filter(n => !have.has(n.toLowerCase())).sort((a, b) => a.localeCompare(b, 'bs'));
+  return r.concat(extra);
+}
+function esc(s) { return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+$('btnAdd').onclick = () => {
+  const student = norm($('student').value);
+  const date = $('date').value;
+  const hours = parseInt($('hours').value, 10);
+  if (!student) return msg(allNames().length ? 'Odaberi učenika.' : 'Spisak učenika je prazan. Dodaj ga u "Datumi polugodišta".', 'over');
+  if (!date) return msg('Odaberi datum.', 'over');
+  if (!(hours >= 1)) return msg('Broj časova mora biti najmanje 1.', 'over');
+  const s = semOf(date);
+  if (!s) return msg('Datum nije u okviru nijednog polugodišta. Provjeri "Datumi polugodišta".', 'over');
+
+  const existing = db.entries.find(e => e.student.toLowerCase() === student.toLowerCase() && e.date === date);
+  if (existing) {
+    existing.hours = hours;
+    msg(`Za ${existing.student} na datum ${fmt(date)} već postoji unos. Broj časova je ažuriran na ${hours}. Dan nije brojan dvaput.`, 'warn');
+  } else {
+    db.entries.push({ student: known_name(student), date, hours });
+    const days = db.entries.filter(e => e.student.toLowerCase() === student.toLowerCase() && semOf(e.date) === s).length;
+    const limit = +db.settings.limit;
+    msg(`Zabilježeno: ${student}, ${fmt(date)}, ${hours} čas(ova). Iskorišteno ${days} od ${limit} dana u ${s}. polugodištu.` + (days > limit ? ' LIMIT PREKORAČEN!' : ''), days > limit ? 'over' : 'ok');
+  }
+  save();
+  sem = s; $('semSelect').value = sem;
+  expanded = known_name(student);
+  $('student').value = ''; $('hours').value = 1;
+  render(); $('student').focus();
+};
+function known_name(n) { const f = allNames().find(x => x.toLowerCase() === n.toLowerCase()); return f || n; }
+
+$('tbody').onclick = ev => {
+  const del = ev.target.closest('[data-del]');
+  if (del) {
+    const [n, d] = del.dataset.del.split('|');
+    const name = decodeURIComponent(n);
+    if (confirm(`Obrisati opravdanje za ${name} (${fmt(d)})?`)) {
+      db.entries = db.entries.filter(e => !(e.student === name && e.date === d));
+      save(); render();
+    }
+    return;
+  }
+  const tr = ev.target.closest('tr.student');
+  if (tr) { const n = decodeURIComponent(tr.dataset.n); expanded = expanded === n ? null : n; render(); }
+};
+
+$('semSelect').onchange = () => { sem = +$('semSelect').value; expanded = null; render(); };
+$('search').oninput = render;
+
+$('btnSettings').onclick = () => {
+  const box = $('settings');
+  const show = box.style.display !== 'block';
+  box.style.display = show ? 'block' : 'none';
+  if (show) { const s = db.settings; $('s1a').value = s.s1a; $('s1b').value = s.s1b; $('s2a').value = s.s2a; $('s2b').value = s.s2b; $('limit').value = s.limit;
+    $('cls').value = s.cls || ''; $('teacher').value = s.teacher || ''; $('roster').value = (s.roster || []).join('\n'); }
+};
+$('btnSaveSettings').onclick = () => {
+  const s = { s1a: $('s1a').value, s1b: $('s1b').value, s2a: $('s2a').value, s2b: $('s2b').value, limit: parseInt($('limit').value, 10),
+    cls: $('cls').value.trim(), teacher: $('teacher').value.trim(),
+    roster: $('roster').value.split('\n').map(norm).filter(Boolean) };
+  if (!s.s1a || !s.s1b || !s.s2a || !s.s2b || !(s.limit >= 1)) return alert('Popuni sva polja.');
+  if (s.s1a > s.s1b || s.s2a > s.s2b || s.s1b >= s.s2a) return alert('Datumi nisu ispravni (polugodišta se ne smiju preklapati).');
+  db.settings = s; save(); $('settings').style.display = 'none'; render();
+};
+
+function download(name, content, type) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], { type }));
+  a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+$('btnCsv').onclick = () => {
+  const s = db.settings, h = esc;
+  const year = `${s.s1a.slice(0, 4)}/${s.s2b.slice(0, 4)}`;
+  const cell = e => { const [, m, d] = e.date.split('-'); return `${+d}.${m}. (${e.hours})`; };
+  const tot = es => es.length ? `${es.length} (${es.reduce((a, e) => a + e.hours, 0)} čas.)` : '';
+  const grid = es => {
+    es = es.slice().sort((a, b) => a.date.localeCompare(b.date));
+    const c = es.slice(0, 5).map(cell);
+    if (es.length > 5) c[4] += ', ' + es.slice(5).map(cell).join(', ');
+    while (c.length < 5) c.push('');
+    return c;
+  };
+  const bd = 'border:1px solid #000;padding:2px 4px;';
+  const td = (v, extra = '') => `<td style="${bd}${extra}">${h(String(v))}</td>`;
+  let t = `<tr><td colspan="14" style="${bd}text-align:center;font-size:14pt">Pravdanje izostanaka za učenike od strane roditelja u toku šk.godine ${year}</td></tr>`;
+  t += `<tr><td colspan="7" style="${bd}">Odjeljenje : ${h(s.cls || '')}</td><td colspan="7" style="${bd}">Razrednik/ca: ${h(s.teacher || '')}</td></tr>`;
+  t += `<tr><td rowspan="3" style="${bd}text-align:center">R/b</td><td rowspan="3" style="${bd}text-align:center">Ime i Prezime</td><td colspan="12" style="${bd}text-align:center">termini pravdanja od strane roditelja u toku školske godine ${year}</td></tr>`;
+  t += `<tr><td colspan="6" style="${bd}text-align:center">I polugodište</td><td colspan="6" style="${bd}text-align:center">II polugodište</td></tr>`;
+  const nums = [1, 2, 3, 4, 5];
+  t += '<tr>' + nums.map(n => td(n, 'text-align:right')).join('') + td('ukupno') + nums.map(n => td(n, 'text-align:right')).join('') + td('ukupno') + '</tr>';
+  const names = allNames();
+  const rows = Math.max(names.length, 27);
+  for (let i = 0; i < rows; i++) {
+    const n = names[i];
+    let r = td(i + 1, 'text-align:right') + td(n || '');
+    if (n) {
+      const mine = db.entries.filter(e => e.student === n);
+      const a = mine.filter(e => semOf(e.date) === 1), b = mine.filter(e => semOf(e.date) === 2);
+      r += grid(a).map(v => td(v)).join('') + td(tot(a)) + grid(b).map(v => td(v)).join('') + td(tot(mine));
+    } else r += td('').repeat(12);
+    t += `<tr>${r}</tr>`;
+  }
+  const nb = 'font-size:12pt;vertical-align:top;';
+  const clause = 'U članu 7. stav (4) mijenja se i glasi:<br>"(4) U toku nastavne godine roditelj može lično opravdati izostanak svog djeteta bez ispričnice/ljekarskog uvjerenja u trajanju od najviše pet dana u toku jednog polugodišta, odnosno deset dana u toku nastavne godine.".';
+  t += `<tr><td colspan="7" rowspan="4" style="${nb}">${clause}</td><td colspan="7" style="${nb}">&nbsp;</td></tr>`;
+  t += `<tr><td colspan="7" style="${nb}">potpis:razrednika/ce</td></tr>`;
+  t += `<tr><td colspan="7" style="${nb}">&nbsp;</td></tr>`;
+  t += `<tr><td colspan="7" style="${nb}">potpis pom.direktora:</td></tr>`;
+  const cols = '<col width="34"><col width="190">' + '<col width="78">'.repeat(5) + '<col width="90">' + '<col width="78">'.repeat(5) + '<col width="90">';
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>@page{size:29.7cm 21cm;mso-page-orientation:landscape;margin:.4in .4in .4in .4in;} table{table-layout:fixed;} td{white-space:normal;font-family:Calibri,Arial;font-size:11pt;}</style><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Pravdanje</x:Name><x:WorksheetOptions><x:FitToPage/><x:Print><x:ValidPrinterInfo/><x:PaperSizeIndex>9</x:PaperSizeIndex><x:FitWidth>1</x:FitWidth><x:FitHeight>1</x:FitHeight></x:Print></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table style="border-collapse:collapse">${cols}${t}</table></body></html>`;
+  download(`pravdanje_izostanaka_${(s.cls || 'odjeljenje').replace(/[^\w.-]+/g, '_')}.xls`, html, 'application/vnd.ms-excel');
+};
+$('btnBackup').onclick = () => download(`opravdanja_kopija_${today()}.json`, JSON.stringify(db, null, 2), 'application/json');
+$('btnRestore').onclick = () => $('fileRestore').click();
+$('fileRestore').onchange = ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const d = JSON.parse(r.result);
+      if (!d.entries || !d.settings) throw 0;
+      if (!confirm('Ovo će zamijeniti sve trenutne podatke. Nastaviti?')) return;
+      db = d; save(); sem = currentSem(); renderSemSelect(); render();
+    } catch (e) { alert('Datoteka nije ispravna sigurnosna kopija.'); }
+  };
+  r.readAsText(f); ev.target.value = '';
+};
+
+
+// Polje za datum s kalendarom i nazivima mjeseci na bosanskom
+const MJESECI = ['januar', 'februar', 'mart', 'april', 'maj', 'juni', 'juli', 'august', 'septembar', 'oktobar', 'novembar', 'decembar'];
+const DANI = ['Po', 'Ut', 'Sr', 'Če', 'Pe', 'Su', 'Ne'];
+function dateField(id) {
+  const old = $(id);
+  const w = document.createElement('span');
+  w.id = id; w.className = 'dp';
+  const inp = document.createElement('input');
+  inp.readOnly = true; inp.placeholder = 'odaberi datum';
+  const pop = document.createElement('div');
+  pop.className = 'cal';
+  w.appendChild(inp); w.appendChild(pop);
+  let val = '', vy = 0, vm = 0;
+  const pad = n => String(n).padStart(2, '0');
+  const iso = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
+  const longFmt = v => { const [y, m, d] = v.split('-'); return `${+d}. ${MJESECI[+m - 1]} ${y}.`; };
+  function draw() {
+    const first = (new Date(vy, vm, 1).getDay() + 6) % 7;
+    const days = new Date(vy, vm + 1, 0).getDate();
+    const t = today();
+    let g = DANI.map(d => `<span>${d}</span>`).join('') + '<span></span>'.repeat(first);
+    for (let d = 1; d <= days; d++) {
+      const v = iso(vy, vm, d);
+      g += `<button type="button" data-d="${v}" class="${v === val ? 'sel' : ''} ${v === t ? 'td' : ''}">${d}</button>`;
+    }
+    pop.innerHTML = `<div class="hd"><button type="button" data-a="-12">«</button><button type="button" data-a="-1">‹</button><b>${MJESECI[vm]} ${vy}.</b><button type="button" data-a="1">›</button><button type="button" data-a="12">»</button></div><div class="g">${g}</div><div class="ft"><button type="button" data-a="today">Danas</button></div>`;
+  }
+  function setView(y, m) { vy = y; vm = m; while (vm < 0) { vm += 12; vy--; } while (vm > 11) { vm -= 12; vy++; } draw(); }
+  function pick(v) { val = v; inp.value = v ? longFmt(v) : ''; pop.style.display = 'none'; }
+  inp.onclick = () => {
+    const base = val || today();
+    setView(+base.slice(0, 4), +base.slice(5, 7) - 1);
+    pop.style.display = pop.style.display === 'block' ? 'none' : 'block';
+  };
+  pop.onclick = ev => {
+    ev.stopPropagation();
+    const dEl = ev.target.closest('[data-d]');
+    if (dEl) return pick(dEl.dataset.d);
+    const aEl = ev.target.closest('[data-a]');
+    if (!aEl) return;
+    if (aEl.dataset.a === 'today') return pick(today());
+    setView(vy, vm + (+aEl.dataset.a));
+  };
+  document.addEventListener('click', ev => { if (!w.contains(ev.target)) pop.style.display = 'none'; });
+  Object.defineProperty(w, 'value', {
+    get() { return val; },
+    set(v) { pick(/^\d{4}-\d{2}-\d{2}$/.test(v || '') ? v : ''); }
+  });
+  old.replaceWith(w);
+}
+['date', 's1a', 's1b', 's2a', 's2b'].forEach(dateField);
+
+$('date').value = today();
+sem = currentSem();
+renderSemSelect();
+render();
+</script>
+</body>
+</html>
