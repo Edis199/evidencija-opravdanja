@@ -334,8 +334,8 @@ $('btnCsv').onclick = () => {
     return c;
   };
   // Okvir: tanke linije unutra, srednja linija oko cijele tabele
-  const THIN = '.5pt solid #000', MED = '1.5pt solid #000';
-  const edge = (o = {}) => `border-left:${o.l ? MED : THIN};border-right:${o.r ? MED : THIN};border-top:${o.t ? MED : THIN};border-bottom:${o.b ? MED : THIN};padding:0 4px;vertical-align:middle;`;
+  const THIN = '.5pt solid #000', MED = '1pt solid #000';
+  const edge = (o = {}) => `border-left:${o.l ? MED : THIN};border-right:${o.r ? MED : THIN};border-top:${o.t ? MED : THIN};border-bottom:${o.b ? MED : THIN};padding:0 3px;vertical-align:middle;white-space:nowrap;`;
   const td = (v, extra = '', o = {}, attrs = '') => `<td ${attrs} style="${edge(o)}${extra}">${v === '' ? '&nbsp;' : h(String(v))}</td>`;
   const plain = 'border:none;padding:0 4px;vertical-align:middle;white-space:nowrap;';
   const RH = 'height:15pt';
@@ -381,8 +381,8 @@ $('btnCsv').onclick = () => {
     t += `<tr style="${RH}"><td style="${plain}">&nbsp;</td><td colspan="8" style="${plain}">${h(l) || '&nbsp;'}</td><td colspan="5" style="${plain}">${h(r) || '&nbsp;'}</td></tr>`;
   });
 
-  const cols = '<col width="37"><col width="195">' + '<col width="76">'.repeat(12);
-  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>@page{size:29.7cm 21cm;mso-page-orientation:landscape;margin:.4in .4in .4in .4in;mso-horizontal-page-align:center;mso-vertical-page-align:center;} table{table-layout:fixed;border-collapse:collapse;} td{white-space:normal;font-family:Calibri,Arial;font-size:11pt;}</style><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Pravdanje</x:Name><x:WorksheetOptions><x:FitToPage/><x:Print><x:ValidPrinterInfo/><x:PaperSizeIndex>9</x:PaperSizeIndex><x:FitWidth>1</x:FitWidth><x:FitHeight>1</x:FitHeight></x:Print></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table>${cols}${t}</table></body></html>`;
+  const cols = '<col width="37"><col width="190">' + ('<col width="86">'.repeat(5) + '<col width="94">').repeat(2);
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>@page{size:29.7cm 21cm;mso-page-orientation:landscape;margin:.4in .4in .4in .4in;mso-horizontal-page-align:center;mso-vertical-page-align:center;} table{table-layout:fixed;border-collapse:collapse;} td{white-space:nowrap;font-family:Calibri,Arial;font-size:11pt;}</style><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Pravdanje</x:Name><x:WorksheetOptions><x:FitToPage/><x:Print><x:ValidPrinterInfo/><x:PaperSizeIndex>9</x:PaperSizeIndex><x:FitWidth>1</x:FitWidth><x:FitHeight>1</x:FitHeight></x:Print></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table>${cols}${t}</table></body></html>`;
   download(`pravdanje_izostanaka_${(s.cls || 'odjeljenje').replace(/[^\w.-]+/g, '_')}.xls`, html, 'application/vnd.ms-excel');
 };
 $('btnBackup').onclick = () => download(`opravdanja_kopija_${today()}.json`, JSON.stringify(db, null, 2), 'application/json');
