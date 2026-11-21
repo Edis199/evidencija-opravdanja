@@ -11,114 +11,156 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Izostanci">
 <style>
-  body { font-family: Segoe UI, Arial, sans-serif; margin: 0; background: #faf5ea; color: #3a2f20; }
-  header { background: #e6d3b0; color: #4a3820; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-  header h1 { font-size: 20px; margin: 0; }
-  main { max-width: 960px; margin: 20px auto; padding: 0 16px; }
-  .card { background: #fff; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
-  label { font-size: 13px; color: #555; display: block; margin-bottom: 3px; }
-  input, select, button { font-size: 15px; padding: 7px 10px; border: 1px solid #bbb; border-radius: 5px; }
-  button { cursor: pointer; background: #8c6d3f; color: #fff; border: none; }
-  button.sec { background: #efe4cc; color: #3a2f20; }
-  button.del { background: #c0392b; padding: 3px 9px; }
-  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
-  .row > div { display: flex; flex-direction: column; }
+  :root { --bg:#faf5ea; --ink:#3a2f20; --muted:#7a6a52; --line:#e4d8bf; --line2:#efe6d2; --sand:#e6d3b0; --brown:#8c6d3f; --brown-d:#75592f; --head:#f3ead8; }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", Inter, Arial, sans-serif; margin: 0; background: var(--bg); color: var(--ink); }
+  .top { max-width: 1000px; margin: 0 auto; padding: 28px 16px 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .top h1 { font-size: 30px; font-weight: 500; margin: 0; }
+  .hdr-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  main { max-width: 1000px; margin: 12px auto 40px; padding: 0 16px; }
+  .card { background: #fff; border: 1px solid #eadfc8; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(90,70,30,.10); }
+  .card h2 { font-size: 18px; font-weight: 600; margin: 0 0 14px; }
+  label { font-size: 14px; font-weight: 500; display: block; margin-bottom: 6px; }
+
+  input:not([type]), input[type=text], input[type=number], input[type=date], select, textarea {
+    font: inherit; font-size: 15px; color: var(--ink); height: 42px; padding: 0 12px; border: 1px solid #d9c9a8; border-radius: 8px; background: #fff; }
+  textarea { height: auto; padding: 10px 12px; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--brown); box-shadow: 0 0 0 3px rgba(140,109,63,.18); }
+  select { appearance: none; -webkit-appearance: none; padding-right: 36px; cursor: pointer;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237a6a52' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center; }
+
+  button { font: inherit; font-size: 15px; cursor: pointer; background: var(--brown); color: #fff; border: none; border-radius: 8px; padding: 6px 12px; }
+  .btn { height: 42px; padding: 0 36px; font-weight: 600; }
+  .btn:hover { background: var(--brown-d); }
+  .btn-o { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; background: #fff; color: var(--ink); border: 1px solid #d9c9a8; font-size: 14.5px; }
+  .btn-o:hover { background: #fbf6ea; }
+  .btn-o svg { flex: none; }
+  button.del { background: #c0392b; padding: 3px 10px; font-size: 13px; border-radius: 6px; }
+
+  .form { display: grid; grid-template-columns: 2fr 2fr 1fr auto; gap: 16px; align-items: end; }
+  .form select, .form input:not([type=hidden]) { width: 100%; }
+  .msg { margin-top: 12px; font-size: 14px; min-height: 18px; }
+
+  .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .toolbar .btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  #search { width: 280px; height: 40px; padding-left: 38px;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237a6a52' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M21 21l-4.3-4.3'/%3E%3C/svg%3E") no-repeat 12px center; }
+
+  .tbl { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
   table { width: 100%; border-collapse: collapse; }
-  th, td { text-align: left; padding: 8px; border-bottom: 1px solid #e3e3e3; }
-  th { background: #f3ead8; font-size: 13px; }
+  th, td { text-align: left; padding: 14px 18px; border-bottom: 1px solid var(--line2); }
+  th { background: var(--head); font-size: 15px; font-weight: 600; border-bottom: 1px solid var(--line); }
+  tbody tr:last-child td { border-bottom: none; }
   tr.student { cursor: pointer; }
   tr.student:hover { background: #fbf6ea; }
+  .dtxt { font-size: 14.5px; }
+  .bar { height: 6px; width: 150px; max-width: 100%; background: #eee4d0; border-radius: 3px; margin-top: 5px; overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 3px; }
+  .bar i.ok { background: #4caf6a; } .bar i.warn { background: #e0a030; } .bar i.over { background: #d9534f; }
+  .pill { display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: 14px; font-weight: 500; }
+  .pill.ok { background: #dcefdc; color: #1e6b2a; }
+  .pill.warn { background: #fbe7c4; color: #8a5a00; }
+  .pill.over { background: #f7d4d0; color: #a32a1f; }
   .ok { color: #1e8449; font-weight: 600; }
   .warn { color: #b9770e; font-weight: 600; }
   .over { color: #c0392b; font-weight: 700; }
-  .detail td { background: #fcf9f1; padding-left: 30px; }
-  .msg { margin-top: 10px; font-size: 14px; min-height: 18px; }
-  .hdr-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .hdr-controls select, .hdr-controls button { font-size: 14px; }
+  .detail td { background: #fcf9f1; padding: 9px 18px 9px 34px; font-size: 14.5px; }
+  #tableTitle { display: none; }
+  #empty { padding: 16px 18px; color: var(--muted); }
   #settings { display: none; }
-  .dp { position: relative; display: inline-block; }
-  .dp input { width: 190px; cursor: pointer; background: #fff; }
-  .cal { display: none; position: absolute; top: 100%; left: 0; z-index: 20; width: 260px; background: #fff; border: 1px solid #bbb; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.2); padding: 8px; margin-top: 2px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+  .row > div { display: flex; flex-direction: column; }
+
+  .dp { position: relative; display: block; }
+  .dp input { width: 100%; cursor: pointer; padding-left: 40px;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%237a6a52' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M3 10h18M8 3v4M16 3v4'/%3E%3C/svg%3E") no-repeat 12px center; }
+  .row .dp input { width: 170px; }
+  .cal { display: none; position: absolute; top: 100%; left: 0; z-index: 20; width: 270px; background: #fff; border: 1px solid #d9c9a8; border-radius: 10px; box-shadow: 0 6px 18px rgba(60,40,10,.22); padding: 10px; margin-top: 4px; }
   .cal .hd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-  .cal .hd button, .cal .ft button { background: #efe4cc; color: #3a2f20; padding: 3px 8px; }
+  .cal .hd button, .cal .ft button { background: #efe4cc; color: var(--ink); padding: 3px 8px; }
   .cal .g { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
   .cal .g span { font-size: 12px; color: #777; padding: 3px 0; }
-  .cal .g button { background: #fff; color: #222; padding: 5px 0; font-size: 14px; border-radius: 4px; }
+  .cal .g button { background: #fff; color: #222; padding: 5px 0; font-size: 14px; border-radius: 6px; }
   .cal .g button:hover { background: #f1e5cc; }
-  .cal .g button.sel { background: #8c6d3f; color: #fff; }
-  .cal .g button.td { border: 1px solid #8c6d3f; }
+  .cal .g button.sel { background: var(--brown); color: #fff; }
+  .cal .g button.td { border: 1px solid var(--brown); }
   .cal .ft { margin-top: 6px; text-align: right; }
-  @media (max-width: 600px) {
-    header { padding: 12px; }
-    header h1 { font-size: 18px; }
-    main { margin: 12px auto; padding: 0 8px; }
-    .card { padding: 12px; }
-    input, select, button { font-size: 16px; }
+
+  @media (max-width: 760px) {
+    .top { padding: 16px 12px 4px; }
+    .top h1 { font-size: 24px; }
+    main { padding: 0 12px; margin-top: 8px; }
+    .card { padding: 14px; }
+    .form { grid-template-columns: 1fr; }
+    .btn { width: 100%; }
+    #search { width: 100%; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    th, td { padding: 10px 8px; font-size: 14px; }
+    .bar { width: 100px; }
     .row > div { flex: 1 1 100%; }
-    .row > div input, .row > div select, .row > div .dp, .row > div textarea { width: 100% !important; box-sizing: border-box; }
-    .dp input { width: 100%; box-sizing: border-box; }
-    #search { width: 100%; box-sizing: border-box; }
-    th, td { padding: 6px 4px; font-size: 14px; }
-    .cal { width: min(260px, 90vw); }
+    .row > div input, .row > div select, .row > div .dp, .row > div textarea { width: 100% !important; }
+    .row .dp input { width: 100%; }
+    .cal { width: min(270px, 90vw); }
   }
 </style>
 </head>
 <body>
-<header>
+<header class="top">
   <h1>Evidencija izostanaka</h1>
   <div class="hdr-controls">
+    <button class="btn-o" id="btnSettings">Datumi polugodišta</button>
     <select id="semSelect"></select>
-    <button class="sec" id="btnSettings">Datumi polugodišta</button>
   </div>
 </header>
 <main>
   <div class="card" id="settings">
-    <b>Datumi polugodišta (promijeni svake školske godine)</b>
-    <div class="row" style="margin-top:10px">
+    <h2>Datumi polugodišta (promijeni svake školske godine)</h2>
+    <div class="row">
       <div><label>1. polugodište od</label><input type="date" id="s1a"></div>
       <div><label>1. polugodište do</label><input type="date" id="s1b"></div>
       <div><label>2. polugodište od</label><input type="date" id="s2a"></div>
       <div><label>2. polugodište do</label><input type="date" id="s2b"></div>
       <div><label>Dozvoljeno dana</label><input type="number" id="limit" min="1" style="width:80px"></div>
     </div>
-    <div class="row" style="margin-top:10px">
+    <div class="row" style="margin-top:14px">
       <div><label>Odjeljenje</label><input id="cls" style="width:120px"></div>
       <div><label>Razrednik/ca</label><input id="teacher" style="width:220px"></div>
     </div>
-    <div style="margin-top:10px">
+    <div style="margin-top:14px">
       <label>Spisak učenika (jedan učenik po redu, redoslijed kao u tabeli; možeš zalijepiti kolonu iz Excela)</label>
-      <textarea id="roster" rows="8" style="width:100%;font-size:14px;padding:7px;box-sizing:border-box"></textarea>
+      <textarea id="roster" rows="8" style="width:100%"></textarea>
     </div>
-    <div style="margin-top:10px"><button id="btnSaveSettings">Sačuvaj</button></div>
+    <div style="margin-top:14px"><button class="btn" id="btnSaveSettings">Sačuvaj</button></div>
   </div>
 
   <div class="card">
-    <b>Novo opravdanje</b>
-    <div class="row" style="margin-top:10px">
-      <div><label>Učenik (ime i prezime)</label><select id="student" style="width:260px"></select></div>
+    <h2>Novo opravdanje</h2>
+    <div class="form">
+      <div><label>Učenik</label><select id="student"></select></div>
       <div><label>Datum opravdanog izostanka</label><input type="date" id="date"></div>
-      <div><label>Broj časova</label><input type="number" id="hours" min="1" max="12" value="1" style="width:80px"></div>
-      <button id="btnAdd">Dodaj</button>
+      <div><label>Broj časova</label><input type="number" id="hours" min="1" max="12" value="1"></div>
+      <button class="btn" id="btnAdd">Dodaj</button>
     </div>
     <div class="msg" id="msg"></div>
   </div>
 
-  <div class="card">
-    <div class="row" style="justify-content:space-between;margin-bottom:10px">
-      <b id="tableTitle">Pregled po učenicima</b>
-      <div class="row">
-        <input id="search" placeholder="Traži učenika...">
-        <button class="sec" id="btnCsv">Izvoz u Excel (tabela razrednika)</button>
-        <button class="sec" id="btnBackup">Sigurnosna kopija</button>
-        <button class="sec" id="btnRestore">Učitaj kopiju</button>
-        <input type="file" id="fileRestore" accept=".json" style="display:none">
-      </div>
+  <div class="toolbar">
+    <input id="search" placeholder="Traži učenika...">
+    <div class="btns">
+      <button class="btn-o" id="btnCsv"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>Izvoz u Excel</button>
+      <button class="btn-o" id="btnBackup"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Sigurnosna kopija</button>
+      <button class="btn-o" id="btnRestore"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 19h16"/></svg>Učitaj kopiju</button>
+      <input type="file" id="fileRestore" accept=".json" style="display:none">
     </div>
+  </div>
+
+  <div class="tbl">
+    <span id="tableTitle">Pregled po učenicima</span>
     <table>
       <thead><tr><th>Učenik</th><th>Iskorišteno dana</th><th>Ukupno časova</th><th>Status</th></tr></thead>
       <tbody id="tbody"></tbody>
     </table>
-    <div id="empty" style="padding:12px;color:#777">Nema unesenih opravdanja za ovo polugodište.</div>
+    <div id="empty">Nema unesenih opravdanja za ovo polugodište.</div>
   </div>
 </main>
 
@@ -188,9 +230,10 @@ function render() {
     else if (days === limit) { st = 'Iskorišteno svih ' + limit; cls = 'over'; }
     else if (days === limit - 1) { st = `Preostao 1 dan`; cls = 'warn'; }
     else { st = `Preostalo ${limit - days}`; cls = 'ok'; }
-    html += `<tr class="student" data-n="${encodeURIComponent(n)}"><td>${esc(n)}</td><td>${days} / ${limit}</td><td>${hours}</td><td class="${cls}">${st}</td></tr>`;
+    const pct = Math.min(100, Math.round(days / limit * 100));
+    html += `<tr class="student" data-n="${encodeURIComponent(n)}"><td>${esc(n)}</td><td><div class="dtxt">${days} / ${limit} dana</div><div class="bar"><i class="${cls}" style="width:${pct}%"></i></div></td><td>${hours} ${hw(hours)}</td><td><span class="pill ${cls}">${st}</span></td></tr>`;
     if (expanded === n) {
-      html += es.map(e => `<tr class="detail"><td colspan="3">${fmt(e.date)} – ${e.hours} ${e.hours === 1 ? 'čas' : 'časova'}</td><td><button class="del" data-del="${encodeURIComponent(n)}|${e.date}">Obriši</button></td></tr>`).join('');
+      html += es.map(e => `<tr class="detail"><td colspan="3">${fmt(e.date)} – ${e.hours} ${hw(e.hours)}</td><td><button class="del" data-del="${encodeURIComponent(n)}|${e.date}">Obriši</button></td></tr>`).join('');
     }
   }
   $('tbody').innerHTML = html;
@@ -206,6 +249,8 @@ function allNames() {
   const extra = [...new Set(db.entries.map(e => e.student))].filter(n => !have.has(n.toLowerCase())).sort((a, b) => a.localeCompare(b, 'bs'));
   return r.concat(extra);
 }
+// čas / časa / časova
+function hw(n) { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? 'čas' : (a >= 2 && a <= 4 && (b < 12 || b > 14)) ? 'časa' : 'časova'; }
 function esc(s) { return s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
 $('btnAdd').onclick = () => {

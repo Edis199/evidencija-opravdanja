@@ -1,5 +1,5 @@
 // Service worker: prvo mreža (da se nove verzije odmah vide), a bez interneta koristi spremljenu kopiju.
-const CACHE = 'izostanci-v3';
+const CACHE = 'izostanci-v4';
 const FILES = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
