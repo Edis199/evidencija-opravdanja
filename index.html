@@ -333,28 +333,43 @@ $('btnCsv').onclick = () => {
     while (c.length < 5) c.push('');
     return c;
   };
-  const bd = 'border:1px solid #000;padding:0 4px;vertical-align:middle;';
-  const td = (v, extra = '') => `<td style="${bd}${extra}">${h(String(v))}</td>`;
-  let t = `<tr style="height:24pt"><td colspan="14" style="${bd}text-align:center;font-size:14pt">Pravdanje izostanaka za učenike od strane roditelja u toku šk.godine ${year}</td></tr>`;
-  t += `<tr style="height:16.5pt"><td colspan="7" style="${bd}">Odjeljenje : ${h(s.cls || '')}</td><td colspan="7" style="${bd}">Razrednik/ca: ${h(s.teacher || '')}</td></tr>`;
-  t += `<tr style="height:16.5pt"><td rowspan="3" style="${bd}text-align:center">R/b</td><td rowspan="3" style="${bd}text-align:center">Ime i Prezime</td><td colspan="12" style="${bd}text-align:center">termini pravdanja od strane roditelja u toku školske godine ${year}</td></tr>`;
-  t += `<tr style="height:16.5pt"><td colspan="6" style="${bd}text-align:center">I polugodište</td><td colspan="6" style="${bd}text-align:center">II polugodište</td></tr>`;
-  const nums = [1, 2, 3, 4, 5];
-  t += '<tr style="height:16.5pt">' + nums.map(n => td(n, 'text-align:right')).join('') + td('ukupno') + nums.map(n => td(n, 'text-align:right')).join('') + td('ukupno') + '</tr>';
+  // Okvir: tanke linije unutra, srednja linija oko cijele tabele
+  const THIN = '.5pt solid #000', MED = '1.5pt solid #000';
+  const edge = (o = {}) => `border-left:${o.l ? MED : THIN};border-right:${o.r ? MED : THIN};border-top:${o.t ? MED : THIN};border-bottom:${o.b ? MED : THIN};padding:0 4px;vertical-align:middle;`;
+  const td = (v, extra = '', o = {}, attrs = '') => `<td ${attrs} style="${edge(o)}${extra}">${v === '' ? '&nbsp;' : h(String(v))}</td>`;
+  const plain = 'border:none;padding:0 4px;vertical-align:middle;white-space:nowrap;';
+  const RH = 'height:15pt';
   const names = allNames();
   const rows = Math.max(names.length, 27);
+
+  // naslov i odjeljenje/razrednik: bez okvira
+  let t = `<tr style="${RH}"><td colspan="14" style="${plain}text-align:center">Pravdanje izostanaka za učenike od strane roditelja u toku šk.godine ${year}</td></tr>`;
+  t += `<tr style="${RH}"><td colspan="9" style="${plain}">Odeljenje : ${h(s.cls || '')}</td><td colspan="5" style="${plain}">Razrednik/ca: ${h(s.teacher || '')}</td></tr>`;
+
+  // zaglavlje tabele
+  t += `<tr style="${RH}">` + td('R/b', 'text-align:center', { l: 1, t: 1 }, 'rowspan="3"') + td('Ime i Prezime', 'text-align:center', { t: 1 }, 'rowspan="3"') +
+    td(`termini pravdanja od strane roditelja u toku školske godine ${year}`, 'text-align:center', { t: 1, r: 1 }, 'colspan="12"') + '</tr>';
+  t += `<tr style="${RH}">` + td('I polugodište', 'text-align:center', {}, 'colspan="6"') + td('II polugodište', 'text-align:center', { r: 1 }, 'colspan="6"') + '</tr>';
+  const nums = [1, 2, 3, 4, 5];
+  t += `<tr style="${RH}">` + nums.map(n => td(n, 'text-align:right')).join('') + td('ukupno') +
+    nums.map(n => td(n, 'text-align:right')).join('') + td('ukupno', '', { r: 1 }) + '</tr>';
+
+  // redovi s učenicima
   for (let i = 0; i < rows; i++) {
-    const n = names[i];
-    let r = td(i + 1, 'text-align:right') + td(n || '');
+    const n = names[i], last = i === rows - 1;
+    let vals = Array(12).fill('');
     if (n) {
       const mine = db.entries.filter(e => e.student === n);
       const a = mine.filter(e => semOf(e.date) === 1), b = mine.filter(e => semOf(e.date) === 2);
-      r += grid(a).map(v => td(v)).join('') + td(tot(a)) + grid(b).map(v => td(v)).join('') + td(tot(mine));
-    } else r += td('').repeat(12);
-    t += `<tr style="height:16pt">${r}</tr>`;
+      vals = grid(a).concat([tot(a)], grid(b), [tot(mine)]);
+    }
+    let r = td(i + 1, 'text-align:right', { l: 1, b: last }) + td(n || '', '', { b: last });
+    vals.forEach((v, k) => { r += td(v, '', { b: last, r: k === 11 }); });
+    t += `<tr style="${RH}">${r}</tr>`;
   }
-  // Donji dio: pet običnih redova (bez spojenih ćelija), da visina ne bude odsječena
-  const nb = 'font-size:11pt;vertical-align:middle;white-space:nowrap;';
+
+  // razmak + donji dio: tekst od kolone "Ime i Prezime", potpisi desno od druge kolone II polugodišta
+  t += `<tr style="${RH}"><td colspan="14" style="${plain}">&nbsp;</td></tr>`;
   const foot = [
     ['U članu 7. stav (4) mijenja se i glasi:', ''],
     ['"(4) U toku nastavne godine roditelj može lično opravdati izostanak svog djeteta bez', 'potpis:razrednika/ce'],
@@ -363,10 +378,11 @@ $('btnCsv').onclick = () => {
     ['godine.".', '']
   ];
   foot.forEach(([l, r]) => {
-    t += `<tr style="height:16pt"><td colspan="7" style="${nb}">${h(l) || '&nbsp;'}</td><td colspan="7" style="${nb}">${h(r) || '&nbsp;'}</td></tr>`;
+    t += `<tr style="${RH}"><td style="${plain}">&nbsp;</td><td colspan="8" style="${plain}">${h(l) || '&nbsp;'}</td><td colspan="5" style="${plain}">${h(r) || '&nbsp;'}</td></tr>`;
   });
-  const cols = '<col width="34"><col width="190">' + '<col width="78">'.repeat(5) + '<col width="90">' + '<col width="78">'.repeat(5) + '<col width="90">';
-  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>@page{size:29.7cm 21cm;mso-page-orientation:landscape;margin:.4in .4in .4in .4in;mso-horizontal-page-align:center;mso-vertical-page-align:center;} table{table-layout:fixed;} td{white-space:normal;font-family:Calibri,Arial;font-size:11pt;}</style><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Pravdanje</x:Name><x:WorksheetOptions><x:FitToPage/><x:Print><x:ValidPrinterInfo/><x:PaperSizeIndex>9</x:PaperSizeIndex><x:FitWidth>1</x:FitWidth><x:FitHeight>1</x:FitHeight></x:Print></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table style="border-collapse:collapse">${cols}${t}</table></body></html>`;
+
+  const cols = '<col width="37"><col width="195">' + '<col width="76">'.repeat(12);
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>@page{size:29.7cm 21cm;mso-page-orientation:landscape;margin:.4in .4in .4in .4in;mso-horizontal-page-align:center;mso-vertical-page-align:center;} table{table-layout:fixed;border-collapse:collapse;} td{white-space:normal;font-family:Calibri,Arial;font-size:11pt;}</style><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Pravdanje</x:Name><x:WorksheetOptions><x:FitToPage/><x:Print><x:ValidPrinterInfo/><x:PaperSizeIndex>9</x:PaperSizeIndex><x:FitWidth>1</x:FitWidth><x:FitHeight>1</x:FitHeight></x:Print></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table>${cols}${t}</table></body></html>`;
   download(`pravdanje_izostanaka_${(s.cls || 'odjeljenje').replace(/[^\w.-]+/g, '_')}.xls`, html, 'application/vnd.ms-excel');
 };
 $('btnBackup').onclick = () => download(`opravdanja_kopija_${today()}.json`, JSON.stringify(db, null, 2), 'application/json');
