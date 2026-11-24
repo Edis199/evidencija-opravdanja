@@ -149,6 +149,7 @@
     <input id="search" placeholder="Traži učenika...">
     <div class="btns">
       <button class="btn-o" id="btnCsv"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>Izvoz u Excel</button>
+      <button class="btn-o" id="btnPdf"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="2"/><path d="M7 14h10v7H7z"/></svg>Izvoz u PDF</button>
       <button class="btn-o" id="btnBackup"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Sigurnosna kopija</button>
       <button class="btn-o" id="btnRestore"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 19h16"/></svg>Učitaj kopiju</button>
       <input type="file" id="fileRestore" accept=".json" style="display:none">
@@ -323,7 +324,7 @@ function download(name, content, type) {
   a.download = name; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
-$('btnCsv').onclick = () => {
+function buildForm() {
   const s = db.settings, h = esc;
   const year = `${s.s1a.slice(0, 4)}/${s.s2b.slice(0, 4)}`;
   const cell = e => { const [, m, d] = e.date.split('-'); return `${+d}.${m}. (${e.hours})`; };
@@ -384,8 +385,32 @@ $('btnCsv').onclick = () => {
   });
 
   const cols = '<col width="37"><col width="190">' + ('<col width="86">'.repeat(5) + '<col width="94">').repeat(2);
+  return { t, cols };
+}
+const fileBase = () => 'pravdanje_izostanaka_' + (db.settings.cls || 'odjeljenje').replace(/[^\w.-]+/g, '_');
+
+$('btnCsv').onclick = () => {
+  const { t, cols } = buildForm();
   const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"><style>@page{size:29.7cm 21cm;mso-page-orientation:landscape;margin:.4in .4in .4in .4in;mso-horizontal-page-align:center;mso-vertical-page-align:center;} table{table-layout:fixed;border-collapse:collapse;} td{white-space:nowrap;font-family:Calibri,Arial;font-size:11pt;}</style><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Pravdanje</x:Name><x:WorksheetOptions><x:FitToPage/><x:Print><x:ValidPrinterInfo/><x:PaperSizeIndex>9</x:PaperSizeIndex><x:FitWidth>1</x:FitWidth><x:FitHeight>1</x:FitHeight></x:Print></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table>${cols}${t}</table></body></html>`;
-  download(`pravdanje_izostanaka_${(s.cls || 'odjeljenje').replace(/[^\w.-]+/g, '_')}.xls`, html, 'application/vnd.ms-excel');
+  download(fileBase() + '.xls', html, 'application/vnd.ms-excel');
+};
+
+// PDF: otvara tabelu spremnu za A4 (landscape) i prozor za štampu; tamo izaberi "Spremi kao PDF"
+$('btnPdf').onclick = () => {
+  const { t, cols } = buildForm();
+  const html = `<!DOCTYPE html><html lang="bs"><head><meta charset="UTF-8"><title>${esc(fileBase())}</title><style>
+    @page { size: A4 landscape; margin: 10mm; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    html, body { margin: 0; padding: 0; background: #fff; }
+    table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+    td { white-space: nowrap; overflow: hidden; font-family: Calibri, Arial, sans-serif; font-size: 9pt; }
+    tr { height: 4.7mm !important; }
+    .hint { font: 14px Arial, sans-serif; background: #fff4d6; border-bottom: 1px solid #e0c98a; padding: 8px 12px; }
+    @media print { .hint { display: none; } }
+  </style></head><body><div class="hint">U prozoru za štampu izaberi odredište "Spremi kao PDF" (Save as PDF), papir A4, položeno (Landscape), bez zaglavlja i podnožja.</div><table>${cols}${t}</table><script>window.onload = function () { setTimeout(function () { window.print(); }, 300); };<\/script></body></html>`;
+  const w = window.open('', '_blank');
+  if (!w) return alert('Preglednik je blokirao novi prozor. Dozvoli skočne prozore (pop-up) za ovu stranicu i pokušaj ponovo.');
+  w.document.open(); w.document.write(html); w.document.close();
 };
 $('btnBackup').onclick = () => download(`opravdanja_kopija_${today()}.json`, JSON.stringify(db, null, 2), 'application/json');
 $('btnRestore').onclick = () => $('fileRestore').click();
