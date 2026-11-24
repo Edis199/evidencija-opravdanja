@@ -395,27 +395,158 @@ $('btnCsv').onclick = () => {
   download(fileBase() + '.xls', html, 'application/vnd.ms-excel');
 };
 
-// PDF: otvara tabelu spremnu za A4 (landscape) i prozor za štampu; tamo izaberi "Spremi kao PDF"
+// PDF: aplikacija sama crta obrazac na A4 položenom listu i pravi PDF datoteku.
+// Isti rezultat na računaru i mobitelu; nema prozora za štampu, zaglavlja ni podnožja.
+function drawForm() {
+  const s = db.settings;
+  const DPI = 250, MM = DPI / 25.4;
+  const W = Math.round(297 * MM), H = Math.round(210 * MM);
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+  g.fillStyle = '#000'; g.strokeStyle = '#000';
+
+  const L = 17 * MM, T = 20 * MM, TW = 263 * MM;           // margine: lijevo/desno 17 mm, gore 20 mm
+  const units = [37, 190, 86, 86, 86, 86, 86, 94, 86, 86, 86, 86, 86, 94];
+  const sum = units.reduce((a, b) => a + b, 0);
+  const xs = [L];
+  units.forEach(u => xs.push(xs[xs.length - 1] + u / sum * TW));
+
+  const names = allNames();
+  const n = Math.max(names.length, 27);
+  const totalRows = 2 + 3 + n + 1 + 5;
+  const RH = Math.min(4.5, 170 / totalRows) * MM;
+  const PAD = 0.8 * MM;
+  const fontPx = 9 * 25.4 / 72 * MM;                        // 9 pt
+  g.font = `${fontPx}px Calibri, Carlito, Arial, sans-serif`;
+  g.textBaseline = 'middle';
+  const rowY = r => T + r * RH;                              // gornji rub reda r
+
+  function text(str, x0, x1, r0, r1, align) {
+    if (!str) return;
+    const yTop = rowY(r0), yBot = rowY(r1 + 1);
+    g.save();
+    g.beginPath(); g.rect(x0, yTop, x1 - x0, yBot - yTop); g.clip();
+    g.textAlign = align || 'left';
+    const x = align === 'center' ? (x0 + x1) / 2 : align === 'right' ? x1 - PAD : x0 + PAD;
+    g.fillText(str, x, (yTop + yBot) / 2 + fontPx * 0.05);
+    g.restore();
+  }
+  function line(x0, y0, x1, y1, wPt) {
+    g.lineWidth = wPt * 25.4 / 72 * MM;
+    g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
+  }
+
+  const year = `${s.s1a.slice(0, 4)}/${s.s2b.slice(0, 4)}`;
+  // naslov i odjeljenje / razrednik (bez okvira)
+  text(`Pravdanje izostanaka za učenike od strane roditelja u toku šk.godine ${year}`, xs[0], xs[14], 0, 0, 'center');
+  text(`Odeljenje : ${s.cls || ''}`, xs[0], xs[9], 1, 1);
+  text(`Razrednik/ca: ${s.teacher || ''}`, xs[9], xs[14], 1, 1);
+
+  // zaglavlje tabele
+  text('R/b', xs[0], xs[1], 2, 4, 'center');
+  text('Ime i Prezime', xs[1], xs[2], 2, 4, 'center');
+  text(`termini pravdanja od strane roditelja u toku školske godine ${year}`, xs[2], xs[14], 2, 2, 'center');
+  text('I polugodište', xs[2], xs[8], 3, 3, 'center');
+  text('II polugodište', xs[8], xs[14], 3, 3, 'center');
+  for (let k = 0; k < 5; k++) {
+    text(String(k + 1), xs[2 + k], xs[3 + k], 4, 4, 'right');
+    text(String(k + 1), xs[8 + k], xs[9 + k], 4, 4, 'right');
+  }
+  text('ukupno', xs[7], xs[8], 4, 4);
+  text('ukupno', xs[13], xs[14], 4, 4);
+
+  // redovi učenika
+  const cell = e => { const [, m, d] = e.date.split('-'); return `${+d}.${m}. (${e.hours})`; };
+  const tot = es => es.length ? `${es.length} (${es.reduce((a, e) => a + e.hours, 0)} čas.)` : '';
+  const grid = es => {
+    es = es.slice().sort((a, b) => a.date.localeCompare(b.date));
+    const v = es.slice(0, 5).map(cell);
+    if (es.length > 5) v[4] += ', ' + es.slice(5).map(cell).join(', ');
+    while (v.length < 5) v.push('');
+    return v;
+  };
+  for (let i = 0; i < n; i++) {
+    const r = 5 + i, nm = names[i];
+    text(String(i + 1), xs[0], xs[1], r, r, 'right');
+    if (!nm) continue;
+    text(nm, xs[1], xs[2], r, r);
+    const mine = db.entries.filter(e => e.student === nm);
+    const a1 = mine.filter(e => semOf(e.date) === 1), a2 = mine.filter(e => semOf(e.date) === 2);
+    const vals = grid(a1).concat([tot(a1)], grid(a2), [tot(mine)]);
+    vals.forEach((v, k) => text(v, xs[2 + k], xs[3 + k], r, r));
+  }
+
+  // linije: tanke unutra, srednja oko tabele
+  const THIN = 0.5, MED = 1;
+  const top = rowY(2), bot = rowY(5 + n);
+  for (let r = 3; r < 5 + n; r++) line(r <= 4 ? xs[2] : xs[0], rowY(r), xs[14], rowY(r), THIN);
+  line(xs[1], top, xs[1], bot, THIN);
+  line(xs[2], top, xs[2], bot, THIN);
+  line(xs[8], rowY(3), xs[8], bot, THIN);
+  for (let k = 3; k <= 13; k++) if (k !== 8) line(xs[k], rowY(4), xs[k], bot, THIN);
+  line(xs[0], top, xs[14], top, MED);
+  line(xs[0], bot, xs[14], bot, MED);
+  line(xs[0], top, xs[0], bot, MED);
+  line(xs[14], top, xs[14], bot, MED);
+
+  // donji dio
+  const foot = [
+    ['U članu 7. stav (4) mijenja se i glasi:', ''],
+    ['"(4) U toku nastavne godine roditelj može lično opravdati izostanak svog djeteta bez', 'potpis:razrednika/ce'],
+    ['ispričnice/ljekarskog uvjerenja u trajanju od najviše pet dana u toku jednog', ''],
+    ['polugodišta, odnosno deset dana u toku nastavne', 'potpis pom.direktora:'],
+    ['godine.".', '']
+  ];
+  foot.forEach(([l, rt], k) => {
+    const r = 5 + n + 1 + k;
+    text(l, xs[1], xs[9], r, r);
+    text(rt, xs[9], xs[14], r, r);
+  });
+  return c;
+}
+
+// Jednostavan PDF s jednom A4 položenom stranicom i slikom (JPEG) preko cijele stranice
+function canvasToPdf(c) {
+  const b64 = c.toDataURL('image/jpeg', 0.92).split(',')[1];
+  const bin = atob(b64);
+  const img = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) img[i] = bin.charCodeAt(i);
+  const enc = str => new TextEncoder().encode(str);
+  const PW = 841.89, PH = 595.28;
+  const content = `q ${PW} 0 0 ${PH} 0 0 cm /Im0 Do Q`;
+  const parts = [], offs = [];
+  let len = 0;
+  const push = u => { parts.push(u); len += u.length; };
+  const obj = (num, body) => { offs[num] = len; push(enc(`${num} 0 obj\n${body}\nendobj\n`)); };
+  push(enc('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n'));
+  obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2, '<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+  obj(3, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`);
+  offs[4] = len;
+  push(enc(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${c.width} /Height ${c.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${img.length} >>\nstream\n`));
+  push(img);
+  push(enc('\nendstream\nendobj\n'));
+  obj(5, `<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+  const xref = len;
+  let x = 'xref\n0 6\n0000000000 65535 f \n';
+  for (let i = 1; i <= 5; i++) x += String(offs[i]).padStart(10, '0') + ' 00000 n \n';
+  push(enc(x + `trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`));
+  return new Blob(parts, { type: 'application/pdf' });
+}
+
 $('btnPdf').onclick = () => {
-  const { t, cols } = buildForm();
-  const rh = Math.min(4.5, 170 / (t.match(/<tr/g) || []).length).toFixed(2);
-  const widths = [...cols.matchAll(/width="(\d+)"/g)].map(m => +m[1]);
-  const sum = widths.reduce((a, b) => a + b, 0);
-  const pcols = widths.map(w => `<col style="width:${(w / sum * 100).toFixed(3)}%">`).join('');
-  const html = `<!DOCTYPE html><html lang="bs"><head><meta charset="UTF-8"><title>${esc(fileBase())}</title><style>
-    @page { size: A4 landscape; margin: 0; }
-    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    html, body { margin: 0; background: #fff; }
-    body { width: 297mm; padding: 20mm 17mm 0 17mm; box-sizing: border-box; }
-    table { width: 100%; table-layout: fixed; border-collapse: collapse; }
-    td { white-space: nowrap; overflow: hidden; font-family: Calibri, Arial, sans-serif; font-size: 9pt; }
-    tr { height: ${rh}mm !important; }
-    .hint { font: 14px Arial, sans-serif; background: #fff4d6; border-bottom: 1px solid #e0c98a; padding: 8px 12px; }
-    @media print { .hint { display: none; } }
-  </style></head><body><div class="hint">U prozoru za štampu izaberi odredište "Spremi kao PDF" (Save as PDF), papir A4, položeno (Landscape), bez zaglavlja i podnožja.</div><table>${pcols}${t}</table><script>window.onload = function () { setTimeout(function () { window.print(); }, 300); };<\/script></body></html>`;
-  const w = window.open('', '_blank');
-  if (!w) return alert('Preglednik je blokirao novi prozor. Dozvoli skočne prozore (pop-up) za ovu stranicu i pokušaj ponovo.');
-  w.document.open(); w.document.write(html); w.document.close();
+  try {
+    const blob = canvasToPdf(drawForm());
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fileBase() + '.pdf';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  } catch (e) {
+    alert('PDF nije napravljen: ' + e.message);
+  }
 };
 $('btnBackup').onclick = () => download(`opravdanja_kopija_${today()}.json`, JSON.stringify(db, null, 2), 'application/json');
 $('btnRestore').onclick = () => $('fileRestore').click();
