@@ -398,13 +398,15 @@ $('btnCsv').onclick = () => {
 // PDF: otvara tabelu spremnu za A4 (landscape) i prozor za štampu; tamo izaberi "Spremi kao PDF"
 $('btnPdf').onclick = () => {
   const { t, cols } = buildForm();
+  const rh = Math.min(4.5, 170 / (t.match(/<tr/g) || []).length).toFixed(2);
   const html = `<!DOCTYPE html><html lang="bs"><head><meta charset="UTF-8"><title>${esc(fileBase())}</title><style>
-    @page { size: A4 landscape; margin: 10mm; }
+    @page { size: A4 landscape; margin: 0; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    html, body { margin: 0; padding: 0; background: #fff; }
+    html, body { margin: 0; background: #fff; }
+    body { width: 297mm; padding: 20mm 16.5mm 0; box-sizing: border-box; }
     table { width: 100%; table-layout: fixed; border-collapse: collapse; }
     td { white-space: nowrap; overflow: hidden; font-family: Calibri, Arial, sans-serif; font-size: 9pt; }
-    tr { height: 4.7mm !important; }
+    tr { height: ${rh}mm !important; }
     .hint { font: 14px Arial, sans-serif; background: #fff4d6; border-bottom: 1px solid #e0c98a; padding: 8px 12px; }
     @media print { .hint { display: none; } }
   </style></head><body><div class="hint">U prozoru za štampu izaberi odredište "Spremi kao PDF" (Save as PDF), papir A4, položeno (Landscape), bez zaglavlja i podnožja.</div><table>${cols}${t}</table><script>window.onload = function () { setTimeout(function () { window.print(); }, 300); };<\/script></body></html>`;
