@@ -412,7 +412,12 @@ $('btnPdf').onclick = () => {
     tr { height: ${rh}mm !important; }
     .hint { font: 14px Arial, sans-serif; background: #fff4d6; border-bottom: 1px solid #e0c98a; padding: 8px 12px; }
     @media print { .hint { display: none; } }
-  </style></head><body><div class="hint">U prozoru za štampu izaberi odredište "Spremi kao PDF" (Save as PDF), papir A4, položeno (Landscape), bez zaglavlja i podnožja.</div><table>${pcols}${t}</table><script>window.onload = function () { setTimeout(function () { window.print(); }, 300); };<\/script></body></html>`;
+    /* Ako preglednik (npr. na mobitelu) ipak napravi uspravnu stranicu, okreni tabelu za 90 stepeni da popuni cijeli A4 list */
+    @media print and (orientation: portrait) {
+      html { width: 210mm; height: 297mm; overflow: hidden; }
+      body { position: absolute; left: 0; top: 0; width: 297mm; height: 210mm; transform-origin: 0 0; transform: translateY(297mm) rotate(-90deg); }
+    }
+  </style></head><body><div class="hint">U prozoru za štampu izaberi odredište "Spremi kao PDF" (Save as PDF), papir A4, položeno (Landscape), bez zaglavlja i podnožja. Ako se na mobitelu ne nudi položeno, ostavi kako jeste: tabela će se sama okrenuti na cijeli list.</div><table>${pcols}${t}</table><script>window.onload = function () { setTimeout(function () { window.print(); }, 300); };<\/script></body></html>`;
   const w = window.open('', '_blank');
   if (!w) return alert('Preglednik je blokirao novi prozor. Dozvoli skočne prozore (pop-up) za ovu stranicu i pokušaj ponovo.');
   w.document.open(); w.document.write(html); w.document.close();
